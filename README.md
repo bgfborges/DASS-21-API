@@ -110,5 +110,3 @@ This API, built using Python with Django and PostgreSQL, is designed to facilita
    ```
 
 The API is now accessible at `http://localhost:8000/api/dass21/`.
-
-Feel free to customize this README based on your project structure, naming conventions, and additional features.
