@@ -4,6 +4,7 @@ Test the App DB Models
 
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from core.models import Question, Answer, Report
 
 
 class ModelTests(TestCase):
@@ -59,3 +60,81 @@ class ModelTests(TestCase):
 
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_staff)
+
+
+class AnswerReportCreationTests(TestCase):
+    """ Test Answer and Report Creation """
+
+    def setUp(self):
+        self.user = get_user_model().objects.create_user('test@example.com', 'sample123')
+        self.question = Question.objects.create(
+            text="How often do you feel stressed?",
+            possible_answers=["Never", "Rarely", "Sometimes", "Always"]
+        )
+        self.value = 2
+
+    def test_create_answer(self):
+        """ Test creating an answer """
+        answer = Answer.objects.create(
+            user=self.user,
+            question=self.question,
+            value=self.value
+        )
+
+        self.assertEqual(answer.user, self.user)
+        self.assertEqual(answer.question, self.question)
+        self.assertEqual(answer.value, self.value)
+
+    def test_create_report_with_answer(self):
+        """ Test creating a report with an answer """
+        answer = Answer.objects.create(
+            user=self.user,
+            question=self.question,
+            value=self.value
+        )
+
+        report = Report.objects.create(
+            user=self.user,
+        )
+
+        report.add_answer(answer)
+
+        self.assertEqual(report.user, self.user)
+        self.assertIn(answer, report.answers.all())
+
+    def test_create_report_with_multiple_answers(self):
+        """ Test creating a report with multiple answers """
+        first_question = Question.objects.create(
+            text="How often do you feel happy?",
+            possible_answers=["Never", "Rarely", "Sometimes", "Always"]
+        )
+        first_value = 3
+
+        second_question = Question.objects.create(
+            text="How often do you feel anxious?",
+            possible_answers=["Never", "Rarely", "Sometimes", "Always"]
+        )
+        second_value = 3
+
+        first_answer = Answer.objects.create(
+            user=self.user,
+            question=first_question,
+            value=first_value
+        )
+
+        second_answer = Answer.objects.create(
+            user=self.user,
+            question=second_question,
+            value=second_value
+        )
+
+        report = Report.objects.create(
+            user=self.user,
+        )
+
+        report.add_answer(first_answer)
+        report.add_answer(second_answer)
+
+        self.assertEqual(report.user, self.user)
+        self.assertIn(first_answer, report.answers.all())
+        self.assertIn(second_answer, report.answers.all())
